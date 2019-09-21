@@ -32,5 +32,5 @@ Before attempting to publish your app, you need to add or modify `homepage` prop
 
 # How does it work
 
-
+See the [wiki](https://github.com/PolymathNetwork/dapp-boilerplate/wiki) for more information about the structure of this template.
 
