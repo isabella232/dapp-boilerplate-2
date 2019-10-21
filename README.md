@@ -30,7 +30,12 @@ Before attempting to publish your app, you need to add or modify `homepage` prop
 
 >  ```"homepage": "https://myusername.github.io/my-app",```
 
-# How does it work
+# How it works
 
+See the [wiki](https://github.com/PolymathNetwork/dapp-boilerplate/wiki) section for more information about the structure of this template.
 
+# Obtaining Poly tokens
 
+POLY is an ERC20 utility token. It is required to conduct certain paid operations on Polymath network. For example, reserving a token symbol or attaching additional modules requires a predetermined amount of Poly. Obtaining Poly tokens varies by the Ethereum network in use.
+- Kovan: you can obtain Kovan poly, for free, from the deployed [`PolyFaucet` contract](https://github.com/PolymathNetwork/polymath-core/#v200-1). Foruntately, the SDK will obtain Poly on Kovan networks on-the-fly, when it's needed for a certain SDK functionality (eg symbol reservation).
+- Mainnet: you can buy Poly tokens on mainnet using one of [these markets](https://coinmarketcap.com/currencies/polymath-network/#markets).
