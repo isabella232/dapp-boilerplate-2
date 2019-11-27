@@ -7,13 +7,10 @@ import * as serviceWorker from './serviceWorker'
 
 const initialState = {
   AppReducer: {
-    sdk: undefined,
     loading: false,
     loadingMessage: '',
     error: undefined,
-    networkId: -1,
     walletAddress: '',
-    reservations: undefined
   }
 }
 

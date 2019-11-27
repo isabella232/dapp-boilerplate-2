@@ -1,44 +1,32 @@
-import React, { useContext, useEffect, Fragment } from 'react'
+import React, { useContext } from 'react'
+import { usePolymathSdk, useTokenSelector, User, Network} from '@polymathnetwork/react'
+
 import { Store } from './index'
-import { Polymath, browserUtils } from '@polymathnetwork/sdk'
-import { Layout, Spin, Icon, Typography, Alert } from 'antd'
+import { Layout, Spin, Alert } from 'antd'
 
-const { Content, Header } = Layout
-const { Text } = Typography
-
-const networkConfigs = {
-  1: {
-    polymathRegistryAddress: '0xdfabf3e4793cd30affb47ab6fa4cf4eef26bbc27'
-  },
-  42: {
-    polymathRegistryAddress: '0x5b215a7d39ee305ad28da29bf2f0425c6c2a00b3'
-  },
-  15: {
-    polymathRegistryAddress: '0x9FBDa871d559710256a2502A2517b794B482Db40'
-  }
-}
+const { Content, Header, Sider } = Layout
 
 export const reducer = (state, action) => {
+  console.log('ACTION', action)
   switch (action.type) {
-  case 'INITALIZING':
+  case 'ASYNC_START':
     return {
       ...state,
       loading: true,
-      loadingMessage: 'Initializing Polymath SDK',
+      loadingMessage: action.msg,
       error: undefined,
     }
-  case 'INITIALIZED':
-    const { sdk, networkId, walletAddress } = action
+  case 'ASYNC_COMPLETE':
+    const { type, ...payload } = action
     return {
       ...state,
+      ...payload,
       loading: false,
       loadingMessage: '',
-      error: undefined,
-      sdk,
-      networkId,
-      walletAddress
+      error: undefined
     }
   case 'ERROR':
+  case 'ASYNC_ERROR':
     const { error } = action
     return {
       ...state,
@@ -46,83 +34,54 @@ export const reducer = (state, action) => {
       loadingMessage: '',
       error,
     }
+  case 'TOKEN_SELECTED':
+    const { tokenIndex } = action
+    return {
+      ...state,
+      tokenIndex,
+      error: undefined,
+      features: undefined,
+    }
   default:
     throw new Error(`Unrecognized action type: ${action.type}`)
   }
 }
 
-function Network({networkId}) {
-  const networks = {
-    0: 'Disconnected',
-    1: 'Mainnet',
-    42: 'Kovan'
+async function asyncAction(dispatch, func, msg = '') {
+  try {
+    dispatch({type: 'ASYNC_START', msg})
+    const rets = await func()
+    dispatch({type: 'ASYNC_COMPLETE', ...rets})
   }
-  return (
-    <Fragment>
-      <Icon type="global" style={{
-        marginRight: 10,
-        marginLeft: 20
-      }} />
-      <Text>{networks[networkId]}</Text>
-    </Fragment>
-  )
-}
-
-function User({walletAddress}) {
-  if (walletAddress)
-    return (
-      <Fragment>
-        <Icon type="user" style={{
-          marginRight: 5,
-          marginLeft: 10
-        }}/>
-        <Text>{walletAddress}</Text>
-      </Fragment>
-    )
-  return null
+  catch (error) {
+    dispatch({type: 'ASYNC_ERROR', error: error.message})
+  }
 }
 
 function App() {
-  const [state, dispatch] = useContext(Store)
-  const { sdk, loading, loadingMessage, walletAddress, error, networkId } = state.AppReducer
+  const [state] = useContext(Store)
+  let {error: sdkError, sdk, networkId, walletAddress} = usePolymathSdk()
+  let {error: tokenSelectorError, tokenSelector, tokens, tokenIndex} = useTokenSelector(sdk, walletAddress)
 
-  // Initialize the SDK.
-  useEffect(() => {
-    async function init() {
-      dispatch({type: 'INITALIZING'})
+  let {
+    loading,
+    loadingMessage,
+    error,
+    features,
+  } = state.AppReducer
+  const token = tokens[tokenIndex]
 
-      try {
-        const networkId = await browserUtils.getNetworkId()
-        const walletAddress = await browserUtils.getCurrentAddress()
-        if (![-1, 1, 42].includes(networkId)) {
-          dispatch({
-            type: 'ERROR',
-            error: 'Please switch to either Main or Kovan network'
-          })
-          return
-        }
-
-        const config = networkConfigs[networkId]
-        const sdk = new Polymath()
-        await sdk.connect(config)
-        dispatch({
-          type: 'INITIALIZED',
-          networkId,
-          sdk,
-          walletAddress,
-        })
-      }
-      catch(error) {
-        dispatch({
-          type: 'ERROR',
-          error: error.message
-        })
-      }
-    }
+  error = error || sdkError || tokenSelectorError
+  if (!error && !loadingMessage) {
     if (!sdk) {
-      init()
+      loading = true
+      loadingMessage = 'Initializing Polymath SDK'
     }
-  }, [dispatch, sdk])
+    else if (!tokens.length) {
+      loading = true
+      loadingMessage = 'Loading your security tokens'
+    }
+  }
 
   return (
     <div>
@@ -138,17 +97,38 @@ function App() {
             <Network networkId={networkId} />
             <User walletAddress={walletAddress} />
           </Header>
-          <Content style={{
-            padding: 50,
-            backgroundColor: '#FAFDFF'
-          }}>
-            {error && <Alert
-              message={error}
-              type="error"
-              closable
-              showIcon
-            />}
-          </Content>
+          <Layout>
+            <Sider width={350}
+              style={{
+                padding: 50,
+                backgroundColor: '#FAFDFF'
+              }}
+            >
+              { walletAddress && tokens &&
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  width: 250,
+                  justifyContent: 'flex-start'
+                }}>
+                  {tokenSelector}
+                </div>
+              }
+            </Sider>
+            <Content style={{
+              padding: 50,
+              backgroundColor: '#FAFDFF'
+            }}>
+              {error && <Alert
+                message={error}
+                type="error"
+                closable
+                showIcon
+              />}
+              { token && features &&
+                <div>{token.symbol}</div> }
+            </Content>
+          </Layout>
         </Layout>
       </Spin>
     </div>
