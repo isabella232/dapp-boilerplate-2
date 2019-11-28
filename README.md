@@ -20,6 +20,10 @@ Just click on `Use this template` button above, then follow the wizard.
 - `cd [newly-created-repo-dir]`
 - `yarn install && yarn start`
 
+A browser tab should open and present you with a page like this:
+
+![Homepage](images/homepage.png)
+
 # (optional) Deploy to Github pages 
 
 Static web apps such as this one, could be deployed to numerous different hostd, and usually for free. For simplicity, we have preconfigured this repo to be published to Github pages, as we believe it's the most commonly used static website host. But feel free to use any host you prefer.
