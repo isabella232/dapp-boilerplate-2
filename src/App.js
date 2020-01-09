@@ -111,7 +111,7 @@ function App() {
                   width: 250,
                   justifyContent: 'flex-start'
                 }}>
-                  {tokenSelector}
+                  {tokenSelector()}
                 </div>
               }
             </Sider>

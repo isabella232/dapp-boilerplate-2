@@ -2,7 +2,6 @@
   "workbench.colorTheme": "Default Light+",
   "window.zoomLevel": 0,
   "eslint.enable": true,
-  "eslint.autoFixOnSave": true,
   "editor.tabSize": 2,
   "cSpell.userWords": [
     "antd",
@@ -14,4 +13,7 @@
     "predeploy",
     "tokenholders"
   ],
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
 }
